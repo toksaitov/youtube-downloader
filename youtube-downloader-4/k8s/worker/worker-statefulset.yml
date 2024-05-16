@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: worker
+spec:
+  serviceName: "worker-service"
+  replicas: 4
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: youtube-downloader-4-worker
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 2020
+        env:
+        - name: STATUS_SERVICE_URL
+          value: "redis://status-service:6379"
+        - name: QUEUE_SERVICE_URL
+          value: "amqp://queue-service"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_REGION
+          value: "us-east-1"
+        - name: S3_BUCKET_NAME
+          value: "youtube-downloader-bucket-1"
+        volumeMounts:
+        - name: worker-data
+          mountPath: /usr/src/app/public/downloads
+  volumeClaimTemplates:
+  - metadata:
+      name: worker-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

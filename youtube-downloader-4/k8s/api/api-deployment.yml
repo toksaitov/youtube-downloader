@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: youtube-downloader-4-api
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 1010
+        env:
+        - name: STATUS_SERVICE_URL
+          value: "redis://status-service:6379"
+        - name: QUEUE_SERVICE_URL
+          value: "amqp://queue-service"

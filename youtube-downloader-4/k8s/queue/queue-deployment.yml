@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue
+  template:
+    metadata:
+      labels:
+        app: queue
+    spec:
+      containers:
+      - name: queue
+        image: rabbitmq:3-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        volumeMounts:
+        - name: queue-data
+          mountPath: /var/lib/rabbitmq
+        - name: queue-config-volume
+          mountPath: /etc/rabbitmq/enabled_plugins
+          subPath: enabled_plugins
+      volumes:
+      - name: queue-data
+        persistentVolumeClaim:
+          claimName: queue-pvc
+      - name: queue-config-volume
+        configMap:
+          name: queue-config
+          items:
+          - key: enabled_plugins
+            path: enabled_plugins

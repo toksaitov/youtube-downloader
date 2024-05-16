@@ -1,0 +1,40 @@
+services:
+  front:
+    build: ./youtube-downloader-front
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  api:
+    build: ./youtube-downloader-api
+    ports:
+      - "1010:1010"
+    environment:
+      - STATUS_SERVICE_URL=${STATUS_SERVICE_URL}
+      - QUEUE_SERVICE_URL=${QUEUE_SERVICE_URL}
+    depends_on:
+      - status
+      - queue
+
+  worker:
+    build: ./youtube-downloader-worker
+    ports:
+      - "2020:2020"
+    environment:
+      - STATUS_SERVICE_URL=${STATUS_SERVICE_URL}
+      - QUEUE_SERVICE_URL=${QUEUE_SERVICE_URL}
+    depends_on:
+      - status
+      - queue
+
+  status:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  queue:
+    image: rabbitmq:3-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"

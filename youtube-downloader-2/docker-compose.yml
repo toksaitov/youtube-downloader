@@ -1,0 +1,14 @@
+services:
+  frontend:
+    build: ./youtube-downloader-front
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./youtube-downloader-back
+    ports:
+      - "2929:2929"
+    volumes:
+      - ./youtube-downloader-back/public/downloads:/usr/src/app/public/downloads

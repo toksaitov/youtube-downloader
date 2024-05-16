@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: status-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: status
+  template:
+    metadata:
+      labels:
+        app: status
+    spec:
+      containers:
+      - name: status
+        image: redis:7-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: status-data
+          mountPath: /data
+        - name: status-config-volume
+          mountPath: /usr/local/etc/redis/redis.conf
+          subPath: redis.conf
+      volumes:
+      - name: status-data
+        persistentVolumeClaim:
+          claimName: status-pvc
+      - name: status-config-volume
+        configMap:
+          name: status-config
+          items:
+          - key: redis.conf
+            path: redis.conf
